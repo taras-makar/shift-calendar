@@ -27,6 +27,13 @@
             overflow: hidden;
         }
 
+        .mobile-menu-toggle {
+            display: none;
+            width: 100%;
+            border-radius: 0;
+            padding: 14px 20px;
+        }
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -180,6 +187,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .nav-controls input[type="number"] {
@@ -353,6 +361,31 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 8px;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .header,
+            .controls-section {
+                display: none;
+            }
+
+            .container.mobile-menu-open .header {
+                display: block;
+            }
+
+            .container.mobile-menu-open .controls-section {
+                display: flex;
+            }
+
             .header h1 {
                 font-size: 1.8em;
             }
@@ -382,6 +415,7 @@
 
             .calendar-header {
                 flex-direction: column;
+                align-items: stretch;
             }
 
             .calendar-header h2 {
@@ -389,8 +423,22 @@
             }
 
             .nav-controls {
+                display: none;
+            }
+
+            .container.mobile-menu-open .nav-controls {
+                display: flex;
                 width: 100%;
-                justify-content: center;
+                justify-content: flex-start;
+            }
+
+            .nav-controls input[type="number"] {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+
+            .nav-controls button {
+                flex: 1 1 calc(50% - 5px);
             }
 
             .month-view-header {
@@ -404,6 +452,10 @@
 
             .legend {
                 justify-content: center;
+            }
+
+            .calendar-section {
+                padding: 20px 10px;
             }
         }
 
@@ -430,38 +482,47 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📅 Shift Calendar</h1>
-            <p>Track your work shifts across multiple years</p>
-        </div>
-
-        <div class="controls-section">
-            <div class="control-group">
-                <label for="shift-start-date">First Shift Day:</label>
-                <input type="date" id="shift-start-date">
-                <button onclick="updateShiftStartDate()">Update</button>
+        <button
+            class="mobile-menu-toggle"
+            id="mobile-menu-toggle"
+            onclick="toggleMobileMenu()"
+            aria-label="Toggle calendar settings and controls"
+            aria-expanded="false"
+            aria-controls="mobile-top-panel">☰ Menu</button>
+        <div id="mobile-top-panel" role="region">
+            <div class="header">
+                <h1>📅 Shift Calendar</h1>
+                <p>Track your work shifts across multiple years</p>
             </div>
 
-            <div class="control-group">
-                <label>View Mode:</label>
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="switchView('year')" data-view="year">Year View</button>
-                    <button class="view-btn" onclick="switchView('month')" data-view="month">Month View</button>
+            <div class="controls-section">
+                <div class="control-group">
+                    <label for="shift-start-date">First Shift Day:</label>
+                    <input type="date" id="shift-start-date">
+                    <button onclick="updateShiftStartDate()">Update</button>
                 </div>
-            </div>
 
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color day"></div>
-                    <span>Day Shift (8:00 - 20:00)</span>
+                <div class="control-group">
+                    <label>View Mode:</label>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="switchView('year')" data-view="year">Year View</button>
+                        <button class="view-btn" onclick="switchView('month')" data-view="month">Month View</button>
+                    </div>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color night"></div>
-                    <span>Night Shift (20:00 - 08:00)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color off"></div>
-                    <span>Off</span>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color day"></div>
+                        <span>Day Shift (8:00 - 20:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color night"></div>
+                        <span>Night Shift (20:00 - 08:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color off"></div>
+                        <span>Off</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -571,6 +632,7 @@
         // ==================== View Switching ====================
         function switchView(view) {
             currentView = view;
+            closeMobileMenu();
 
             // Update buttons
             document.querySelectorAll('.view-btn').forEach(btn => {
@@ -578,19 +640,12 @@
             });
             document.querySelector(`[data-view="${view}"]`).classList.add('active');
 
-            // Update displays
-            document.getElementById('year-view').classList.remove('active');
-            document.getElementById('month-view').classList.remove('active');
-
             if (view === 'year') {
-                document.getElementById('year-view').classList.add('active');
                 currentMonth = new Date().getMonth();
                 currentYear = new Date().getFullYear();
-                renderYearView();
-            } else {
-                document.getElementById('month-view').classList.add('active');
-                renderMonthView();
             }
+
+            renderCurrentView();
         }
 
         // ==================== Year Navigation ====================
@@ -639,6 +694,9 @@
 
         // ==================== Render Functions ====================
         function renderCurrentView() {
+            document.getElementById('year-view').classList.toggle('active', currentView === 'year');
+            document.getElementById('month-view').classList.toggle('active', currentView === 'month');
+
             if (currentView === 'year') {
                 renderYearView();
             } else {
@@ -660,6 +718,10 @@
             for (let month = 0; month < 12; month++) {
                 const monthCalendar = createMonthCalendar(currentYear, month, false);
                 yearViewEl.appendChild(monthCalendar);
+            }
+
+            if (currentYear === new Date().getFullYear()) {
+                scrollToCurrentDate();
             }
         }
 
@@ -750,6 +812,9 @@
 
             if (isToday) {
                 cell.classList.add('today');
+                if (!isOtherMonth) {
+                    cell.classList.add('today-current-month');
+                }
             }
 
             const dayNumber = document.createElement('div');
@@ -793,6 +858,37 @@
 
         function capitalizeFirstLetter(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function toggleMobileMenu() {
+            const container = document.querySelector('.container');
+            const menuButton = document.getElementById('mobile-menu-toggle');
+            const isOpen = container.classList.toggle('mobile-menu-open');
+            menuButton.setAttribute('aria-expanded', String(isOpen));
+        }
+
+        function closeMobileMenu() {
+            const container = document.querySelector('.container');
+            const menuButton = document.getElementById('mobile-menu-toggle');
+            container.classList.remove('mobile-menu-open');
+            menuButton.setAttribute('aria-expanded', 'false');
+        }
+
+        function scrollToCurrentDate() {
+            const yearViewEl = document.getElementById('year-view');
+            const isYearViewActive = yearViewEl && yearViewEl.classList.contains('active');
+
+            if (!isYearViewActive) {
+                return;
+            }
+
+            requestAnimationFrame(() => {
+                const todayCell = yearViewEl.querySelector('.day-cell.today-current-month');
+                if (todayCell) {
+                    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    todayCell.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+                }
+            });
         }
     </script>
 </body>
