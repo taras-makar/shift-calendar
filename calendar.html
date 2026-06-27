@@ -690,6 +690,9 @@
 
         // ==================== Render Functions ====================
         function renderCurrentView() {
+            document.getElementById('year-view').classList.toggle('active', currentView === 'year');
+            document.getElementById('month-view').classList.toggle('active', currentView === 'month');
+
             if (currentView === 'year') {
                 renderYearView();
             } else {
