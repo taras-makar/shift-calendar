@@ -565,7 +565,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadShiftStartDate();
             initializeYearInput();
-            initializeMobileMenu();
             renderCurrentView();
         });
 
@@ -849,10 +848,6 @@
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
-        function initializeMobileMenu() {
-            window.addEventListener('resize', closeMobileMenu);
-        }
-
         function toggleMobileMenu() {
             const container = document.querySelector('.container');
             const menuButton = document.getElementById('mobile-menu-toggle');
@@ -870,7 +865,7 @@
         function scrollToCurrentDate() {
             const yearViewEl = document.getElementById('year-view');
             const today = new Date();
-            if (currentYear !== today.getFullYear() || !yearViewEl.classList.contains('active')) {
+            if (!yearViewEl || currentYear !== today.getFullYear() || !yearViewEl.classList.contains('active')) {
                 return;
             }
 
