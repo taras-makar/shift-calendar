@@ -806,6 +806,9 @@
 
             if (isToday) {
                 cell.classList.add('today');
+                if (!isOtherMonth) {
+                    cell.classList.add('today-current-month');
+                }
             }
 
             const dayNumber = document.createElement('div');
@@ -874,7 +877,7 @@
             }
 
             requestAnimationFrame(() => {
-                const todayCell = yearViewEl.querySelector('.day-cell.today:not(.other-month)');
+                const todayCell = yearViewEl.querySelector('.day-cell.today-current-month');
                 if (todayCell) {
                     todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
