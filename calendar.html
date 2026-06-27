@@ -734,8 +734,6 @@
         function createMonthCalendar(year, month, isSingleMonth = false) {
             const monthCalendar = document.createElement('div');
             monthCalendar.className = `month-calendar ${isSingleMonth ? 'single-month' : ''}`;
-            monthCalendar.dataset.year = String(year);
-            monthCalendar.dataset.month = String(month);
 
             // Month header
             const monthHeader = document.createElement('div');
