@@ -424,7 +424,7 @@
 
             .nav-controls {
                 width: 100%;
-                justify-content: stretch;
+                justify-content: flex-start;
             }
 
             .nav-controls input[type="number"] {
@@ -804,7 +804,7 @@
                 cell.classList.add(shiftTypeToClass(shiftType));
             }
 
-            if (isToday && !isOtherMonth) {
+            if (isToday) {
                 cell.classList.add('today');
             }
 
@@ -865,13 +865,6 @@
         function closeMobileMenu() {
             const container = document.querySelector('.container');
             const menuButton = document.getElementById('mobile-menu-toggle');
-
-            if (window.innerWidth > 768) {
-                container.classList.remove('mobile-menu-open');
-                menuButton.setAttribute('aria-expanded', 'false');
-                return;
-            }
-
             container.classList.remove('mobile-menu-open');
             menuButton.setAttribute('aria-expanded', 'false');
         }
