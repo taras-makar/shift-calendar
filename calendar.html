@@ -423,8 +423,13 @@
             }
 
             .nav-controls {
+                display: none;
                 width: 100%;
                 justify-content: flex-start;
+            }
+
+            .container.mobile-menu-open .nav-controls {
+                display: flex;
             }
 
             .nav-controls input[type="number"] {
