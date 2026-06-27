@@ -27,6 +27,13 @@
             overflow: hidden;
         }
 
+        .mobile-menu-toggle {
+            display: none;
+            width: 100%;
+            border-radius: 0;
+            padding: 14px 20px;
+        }
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -180,6 +187,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .nav-controls input[type="number"] {
@@ -353,6 +361,31 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 8px;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .header,
+            .controls-section {
+                display: none;
+            }
+
+            .container.mobile-menu-open .header {
+                display: block;
+            }
+
+            .container.mobile-menu-open .controls-section {
+                display: flex;
+            }
+
             .header h1 {
                 font-size: 1.8em;
             }
@@ -382,6 +415,7 @@
 
             .calendar-header {
                 flex-direction: column;
+                align-items: stretch;
             }
 
             .calendar-header h2 {
@@ -390,7 +424,16 @@
 
             .nav-controls {
                 width: 100%;
-                justify-content: center;
+                justify-content: stretch;
+            }
+
+            .nav-controls input[type="number"] {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+
+            .nav-controls button {
+                flex: 1 1 calc(50% - 5px);
             }
 
             .month-view-header {
@@ -404,6 +447,10 @@
 
             .legend {
                 justify-content: center;
+            }
+
+            .calendar-section {
+                padding: 20px 10px;
             }
         }
 
@@ -430,38 +477,41 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📅 Shift Calendar</h1>
-            <p>Track your work shifts across multiple years</p>
-        </div>
-
-        <div class="controls-section">
-            <div class="control-group">
-                <label for="shift-start-date">First Shift Day:</label>
-                <input type="date" id="shift-start-date">
-                <button onclick="updateShiftStartDate()">Update</button>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-expanded="false" aria-controls="mobile-top-panel">☰ Menu</button>
+        <div id="mobile-top-panel">
+            <div class="header">
+                <h1>📅 Shift Calendar</h1>
+                <p>Track your work shifts across multiple years</p>
             </div>
 
-            <div class="control-group">
-                <label>View Mode:</label>
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="switchView('year')" data-view="year">Year View</button>
-                    <button class="view-btn" onclick="switchView('month')" data-view="month">Month View</button>
+            <div class="controls-section">
+                <div class="control-group">
+                    <label for="shift-start-date">First Shift Day:</label>
+                    <input type="date" id="shift-start-date">
+                    <button onclick="updateShiftStartDate()">Update</button>
                 </div>
-            </div>
 
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color day"></div>
-                    <span>Day Shift (8:00 - 20:00)</span>
+                <div class="control-group">
+                    <label>View Mode:</label>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="switchView('year')" data-view="year">Year View</button>
+                        <button class="view-btn" onclick="switchView('month')" data-view="month">Month View</button>
+                    </div>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color night"></div>
-                    <span>Night Shift (20:00 - 08:00)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color off"></div>
-                    <span>Off</span>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color day"></div>
+                        <span>Day Shift (8:00 - 20:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color night"></div>
+                        <span>Night Shift (20:00 - 08:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color off"></div>
+                        <span>Off</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -515,6 +565,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadShiftStartDate();
             initializeYearInput();
+            initializeMobileMenu();
             renderCurrentView();
         });
 
@@ -571,6 +622,7 @@
         // ==================== View Switching ====================
         function switchView(view) {
             currentView = view;
+            closeMobileMenu();
 
             // Update buttons
             document.querySelectorAll('.view-btn').forEach(btn => {
@@ -661,6 +713,8 @@
                 const monthCalendar = createMonthCalendar(currentYear, month, false);
                 yearViewEl.appendChild(monthCalendar);
             }
+
+            scrollToCurrentDate();
         }
 
         function renderMonthView() {
@@ -680,6 +734,8 @@
         function createMonthCalendar(year, month, isSingleMonth = false) {
             const monthCalendar = document.createElement('div');
             monthCalendar.className = `month-calendar ${isSingleMonth ? 'single-month' : ''}`;
+            monthCalendar.dataset.year = String(year);
+            monthCalendar.dataset.month = String(month);
 
             // Month header
             const monthHeader = document.createElement('div');
@@ -748,7 +804,7 @@
                 cell.classList.add(shiftTypeToClass(shiftType));
             }
 
-            if (isToday) {
+            if (isToday && !isOtherMonth) {
                 cell.classList.add('today');
             }
 
@@ -793,6 +849,46 @@
 
         function capitalizeFirstLetter(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function initializeMobileMenu() {
+            window.addEventListener('resize', closeMobileMenu);
+        }
+
+        function toggleMobileMenu() {
+            const container = document.querySelector('.container');
+            const menuButton = document.getElementById('mobile-menu-toggle');
+            const isOpen = container.classList.toggle('mobile-menu-open');
+            menuButton.setAttribute('aria-expanded', String(isOpen));
+        }
+
+        function closeMobileMenu() {
+            const container = document.querySelector('.container');
+            const menuButton = document.getElementById('mobile-menu-toggle');
+
+            if (window.innerWidth > 768) {
+                container.classList.remove('mobile-menu-open');
+                menuButton.setAttribute('aria-expanded', 'false');
+                return;
+            }
+
+            container.classList.remove('mobile-menu-open');
+            menuButton.setAttribute('aria-expanded', 'false');
+        }
+
+        function scrollToCurrentDate() {
+            const yearViewEl = document.getElementById('year-view');
+            const today = new Date();
+            if (currentYear !== today.getFullYear() || !yearViewEl.classList.contains('active')) {
+                return;
+            }
+
+            requestAnimationFrame(() => {
+                const todayCell = yearViewEl.querySelector('.day-cell.today:not(.other-month)');
+                if (todayCell) {
+                    todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         }
     </script>
 </body>
