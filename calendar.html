@@ -478,7 +478,7 @@
 <body>
     <div class="container">
         <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle top controls menu" aria-expanded="false" aria-controls="mobile-top-panel">☰ Menu</button>
-        <div id="mobile-top-panel">
+        <div id="mobile-top-panel" role="region">
             <div class="header">
                 <h1>📅 Shift Calendar</h1>
                 <p>Track your work shifts across multiple years</p>
@@ -629,19 +629,12 @@
             });
             document.querySelector(`[data-view="${view}"]`).classList.add('active');
 
-            // Update displays
-            document.getElementById('year-view').classList.remove('active');
-            document.getElementById('month-view').classList.remove('active');
-
             if (view === 'year') {
-                document.getElementById('year-view').classList.add('active');
                 currentMonth = new Date().getMonth();
                 currentYear = new Date().getFullYear();
-                renderYearView();
-            } else {
-                document.getElementById('month-view').classList.add('active');
-                renderMonthView();
             }
+
+            renderCurrentView();
         }
 
         // ==================== Year Navigation ====================
