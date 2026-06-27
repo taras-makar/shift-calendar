@@ -571,12 +571,17 @@
         let currentMonth = 3; // April (0-indexed)
         let currentView = 'year';
         let shiftStartDate = null;
+        const FIRST_SHIFT_DAY_PARAM = 'firstShiftDay';
+        const VIEW_PARAM = 'view';
+        const VALID_VIEWS = new Set(['year', 'month']);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            currentView = loadInitialView();
             loadShiftStartDate();
             initializeYearInput();
             renderCurrentView();
+            syncUrlState();
         });
 
         // ==================== Shift Calculation ====================
@@ -593,16 +598,33 @@
 
         // ==================== Date & Config Management ====================
         function loadShiftStartDate() {
+            const urlShiftStartDate = getQueryParam(FIRST_SHIFT_DAY_PARAM);
+            if (urlShiftStartDate) {
+                const parsedDate = parseDateInputValue(urlShiftStartDate);
+                if (parsedDate) {
+                    shiftStartDate = parsedDate;
+                    document.getElementById('shift-start-date').value = formatDateForInput(shiftStartDate);
+                    localStorage.setItem('shiftStartDate', shiftStartDate.toISOString());
+                    return;
+                }
+                console.warn(`Ignoring invalid firstShiftDay URL parameter: ${urlShiftStartDate}`);
+            }
+
             const stored = localStorage.getItem('shiftStartDate');
             if (stored) {
-                shiftStartDate = new Date(stored);
-                document.getElementById('shift-start-date').value = formatDateForInput(shiftStartDate);
-            } else {
-                // Default to today
-                shiftStartDate = new Date(2026, 3, 25); // April 25, 2026
-                localStorage.setItem('shiftStartDate', shiftStartDate.toISOString());
-                document.getElementById('shift-start-date').value = formatDateForInput(shiftStartDate);
+                const storedDate = new Date(stored);
+                if (isValidDate(storedDate)) {
+                    shiftStartDate = storedDate;
+                    document.getElementById('shift-start-date').value = formatDateForInput(shiftStartDate);
+                    return;
+                }
+                console.warn(`Ignoring invalid stored shiftStartDate: ${stored}`);
             }
+
+            // Default to today
+            shiftStartDate = new Date(2026, 3, 25); // April 25, 2026
+            localStorage.setItem('shiftStartDate', shiftStartDate.toISOString());
+            document.getElementById('shift-start-date').value = formatDateForInput(shiftStartDate);
         }
 
         function updateShiftStartDate() {
@@ -615,6 +637,7 @@
             const [year, month, day] = input.split('-');
             shiftStartDate = new Date(year, month - 1, day);
             localStorage.setItem('shiftStartDate', shiftStartDate.toISOString());
+            syncUrlState();
             renderCurrentView();
         }
 
@@ -645,6 +668,7 @@
                 currentYear = new Date().getFullYear();
             }
 
+            syncUrlState();
             renderCurrentView();
         }
 
@@ -858,6 +882,62 @@
 
         function capitalizeFirstLetter(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function loadInitialView() {
+            const view = getQueryParam(VIEW_PARAM);
+            if (VALID_VIEWS.has(view)) {
+                return view;
+            }
+
+            if (view) {
+                console.warn(`Ignoring invalid view URL parameter: ${view}`);
+            }
+            return 'year';
+        }
+
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function parseDateInputValue(value) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                return null;
+            }
+
+            const [year, month, day] = value.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            if (
+                date.getFullYear() !== year ||
+                date.getMonth() !== month - 1 ||
+                date.getDate() !== day
+            ) {
+                return null;
+            }
+
+            return date;
+        }
+
+        function isValidDate(date) {
+            return date instanceof Date && !isNaN(date.getTime());
+        }
+
+        function syncUrlState() {
+            const params = new URLSearchParams(window.location.search);
+            const hasValidShiftStartDate = shiftStartDate !== null && isValidDate(shiftStartDate);
+
+            if (hasValidShiftStartDate) {
+                params.set(FIRST_SHIFT_DAY_PARAM, formatDateForInput(shiftStartDate));
+            } else {
+                params.delete(FIRST_SHIFT_DAY_PARAM);
+            }
+
+            params.set(VIEW_PARAM, currentView);
+
+            const queryString = params.toString();
+            const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`;
+            window.history.replaceState({}, '', nextUrl);
         }
 
         function toggleMobileMenu() {
