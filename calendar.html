@@ -481,7 +481,7 @@
             class="mobile-menu-toggle"
             id="mobile-menu-toggle"
             onclick="toggleMobileMenu()"
-            aria-label="Toggle top controls menu"
+            aria-label="Toggle calendar settings and controls"
             aria-expanded="false"
             aria-controls="mobile-top-panel">☰ Menu</button>
         <div id="mobile-top-panel" role="region">
@@ -715,7 +715,9 @@
                 yearViewEl.appendChild(monthCalendar);
             }
 
-            scrollToCurrentDate();
+            if (currentYear === new Date().getFullYear()) {
+                scrollToCurrentDate();
+            }
         }
 
         function renderMonthView() {
@@ -866,11 +868,9 @@
 
         function scrollToCurrentDate() {
             const yearViewEl = document.getElementById('year-view');
-            const today = new Date();
-            const isCurrentYear = currentYear === today.getFullYear();
             const isYearViewActive = yearViewEl && yearViewEl.classList.contains('active');
 
-            if (!isCurrentYear || !isYearViewActive) {
+            if (!isYearViewActive) {
                 return;
             }
 
