@@ -482,7 +482,8 @@
             id="mobile-menu-toggle"
             onclick="toggleMobileMenu()"
             aria-label="Toggle calendar settings and controls"
-            aria-expanded="false">☰ Menu</button>
+            aria-expanded="false"
+            aria-controls="mobile-top-panel">☰ Menu</button>
         <div id="mobile-top-panel" role="region">
             <div class="header">
                 <h1>📅 Shift Calendar</h1>
@@ -879,7 +880,8 @@
             requestAnimationFrame(() => {
                 const todayCell = yearViewEl.querySelector('.day-cell.today-current-month');
                 if (todayCell) {
-                    todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    todayCell.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
                 }
             });
         }
