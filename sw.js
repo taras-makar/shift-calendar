@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shift-calendar-cache';
+const CACHE_NAME = 'shift-calendar-cache-v1';
 const CALENDAR_URL = './calendar.html';
 const VERSION_URL = './version.json';
 
@@ -106,7 +106,12 @@ async function fetchVersion() {
     throw new Error(`Unable to fetch ${VERSION_URL}: ${response.status}`);
   }
 
-  return parseVersionResponse(response);
+  const version = await parseVersionResponse(response);
+  if (!version) {
+    throw new Error(`Malformed ${VERSION_URL}`);
+  }
+
+  return version;
 }
 
 async function readVersion(cache) {
@@ -125,6 +130,6 @@ async function parseVersionResponse(response) {
     const parsed = JSON.parse(text);
     return typeof parsed.version === 'string' ? parsed.version : null;
   } catch (error) {
-    return text.trim() || null;
+    return null;
   }
 }
