@@ -71,8 +71,6 @@ async function handleDocumentRequest() {
     if (cachedCalendar) {
       return cachedCalendar;
     }
-
-    throw error;
   }
 
   if (cachedCalendar) {
@@ -112,7 +110,7 @@ async function readVersion(cache) {
 }
 
 async function parseVersionResponse(response) {
-  const text = await response.clone().text();
+  const text = await response.text();
 
   try {
     const parsed = JSON.parse(text);
