@@ -1,0 +1,10 @@
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Shift Calendar",
+  "description": "Simple webapp to track shifts",
+  "url": "./calendar.html",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "Web",
+  "version": "1.0.0"
+}
