@@ -5,6 +5,5 @@
   "description": "Simple webapp to track shifts",
   "url": "./calendar.html",
   "applicationCategory": "ProductivityApplication",
-  "operatingSystem": "Web",
-  "version": "1.0.0"
+  "operatingSystem": "Web"
 }
