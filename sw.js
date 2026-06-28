@@ -73,10 +73,6 @@ async function handleDocumentRequest() {
     }
   }
 
-  if (cachedCalendar) {
-    return cachedCalendar;
-  }
-
   return fetch(CALENDAR_URL, { cache: 'no-store' });
 }
 
@@ -94,7 +90,7 @@ async function cacheResource(cache, url) {
 async function fetchVersion() {
   const response = await fetch(VERSION_URL, { cache: 'no-store' });
   if (!response.ok) {
-    throw new Error(`Unable to load ${VERSION_URL}`);
+    throw new Error(`Unable to fetch ${VERSION_URL}: ${response.status}`);
   }
 
   return parseVersionResponse(response);
