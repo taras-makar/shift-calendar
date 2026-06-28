@@ -50,7 +50,7 @@ async function handleDocumentRequest() {
       fetchVersion()
     ]);
 
-    if (cachedCalendar && cachedVersion === networkVersion) {
+    if (cachedCalendar && cachedVersion && networkVersion && cachedVersion === networkVersion) {
       return cachedCalendar;
     }
 
@@ -67,13 +67,26 @@ async function handleDocumentRequest() {
 
       return calendarResponse;
     }
+
+    if (cachedCalendar) {
+      return cachedCalendar;
+    }
   } catch (error) {
     if (cachedCalendar) {
       return cachedCalendar;
     }
   }
 
-  return fetch(CALENDAR_URL, { cache: 'no-store' });
+  try {
+    return await fetch(CALENDAR_URL, { cache: 'no-store' });
+  } catch (error) {
+    return new Response('Shift Calendar is unavailable offline.', {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8'
+      }
+    });
+  }
 }
 
 async function cacheResource(cache, url) {
