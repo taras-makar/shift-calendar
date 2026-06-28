@@ -77,16 +77,12 @@ async function handleDocumentRequest() {
     }
   }
 
-  try {
-    return await fetch(CALENDAR_URL, { cache: 'no-store' });
-  } catch (error) {
-    return new Response('Shift Calendar is unavailable offline.', {
-      status: 503,
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8'
-      }
-    });
-  }
+  return new Response('Shift Calendar is unavailable offline.', {
+    status: 503,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8'
+    }
+  });
 }
 
 async function cacheResource(cache, url) {
