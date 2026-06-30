@@ -80,22 +80,25 @@
             color: #333;
         }
 
-        input[type="date"],
-        input[type="number"],
-        select {
+        .control-group input[type="date"],
+        .control-group input[type="number"],
+        button {
             padding: 10px 15px;
             border: 2px solid #667eea;
             border-radius: 6px;
             font-size: 1em;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+
+        input[type="date"],
+        input[type="number"] {
             background: white;
             color: #333;
         }
 
         input[type="date"]:focus,
-        input[type="number"]:focus,
-        select:focus {
+        input[type="number"]:focus {
             outline: none;
             border-color: #764ba2;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -404,8 +407,7 @@
             }
 
             .control-group input,
-            .control-group button,
-            .control-group select {
+            .control-group button {
                 width: 100%;
             }
 
@@ -514,14 +516,6 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label for="language-select">Language:</label>
-                    <select id="language-select" onchange="setLanguage(this.value)">
-                        <option value="en">English</option>
-                        <option value="uk">Українська</option>
-                    </select>
-                </div>
-
                 <div class="legend">
                     <div class="legend-item">
                         <div class="legend-color day"></div>
@@ -578,208 +572,23 @@
             OFF: 'off'
         };
 
-        // Translations
-        const TRANSLATIONS = {
-            en: {
-                header: '📅 Shift Calendar',
-                subtitle: 'Track your work shifts across multiple years',
-                firstShiftDay: 'First Shift Day:',
-                viewMode: 'View Mode:',
-                yearView: 'Year View',
-                monthView: 'Month View',
-                dayShift: 'Day Shift',
-                nightShift: 'Night Shift',
-                off: 'Off',
-                dayShiftHours: '8:00 - 20:00',
-                nightShiftHours: '20:00 - 08:00',
-                noWork: 'No work',
-                update: 'Update',
-                previousYear: '← Previous Year',
-                nextYear: 'Next Year →',
-                jumpToYear: 'Jump to year',
-                go: 'Go',
-                previousMonth: '← Previous',
-                nextMonth: 'Next →',
-                year: 'Year',
-                language: 'Language:',
-                english: 'English',
-                ukrainian: 'Українська',
-                months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-            },
-            uk: {
-                header: '📅 Календар змін',
-                subtitle: 'Відстежуйте свої робочі зміни протягом кількох років',
-                firstShiftDay: 'Перший день роботи:',
-                viewMode: 'Режим перегляду:',
-                yearView: 'Перегляд року',
-                monthView: 'Перегляд місяця',
-                dayShift: 'День',
-                nightShift: 'Ніч',
-                off: 'Вихідний',
-                dayShiftHours: '8:00 - 20:00',
-                nightShiftHours: '20:00 - 08:00',
-                noWork: 'Не працює',
-                update: 'Оновити',
-                previousYear: '← Попередній рік',
-                nextYear: 'Наступний рік →',
-                jumpToYear: 'Перейти до року',
-                go: 'Перейти',
-                previousMonth: '← Попередній',
-                nextMonth: 'Далі →',
-                year: 'Рік',
-                language: 'Мова:',
-                english: 'English',
-                ukrainian: 'Українська',
-                months: ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'],
-                weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
-            }
-        };
-
         // State
         let currentYear = 2026;
         let currentMonth = 3; // April (0-indexed)
         let currentView = 'year';
         let shiftStartDate = null;
-        let currentLanguage = 'en';
         const FIRST_SHIFT_DAY_PARAM = 'firstShiftDay';
         const VIEW_PARAM = 'view';
-        const LANGUAGE_PARAM = 'lang';
-        const LANGUAGE_STORAGE = 'shift-calendar-language';
         const VALID_VIEWS = new Set(['year', 'month']);
-        const VALID_LANGUAGES = new Set(['en', 'uk']);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            currentLanguage = loadLanguage();
             currentView = loadInitialView();
             loadShiftStartDate();
             initializeYearInput();
-            updatePageTranslations();
             renderCurrentView();
             syncUrlState();
-            scrollToCurrentDate();
         });
-
-        // ==================== Language Management ====================
-        function getTranslation(key) {
-            const translation = TRANSLATIONS[currentLanguage];
-            if (!translation) {
-                return TRANSLATIONS['en'][key] || key;
-            }
-            return translation[key] || TRANSLATIONS['en'][key] || key;
-        }
-
-        function getMonth(monthIndex) {
-            const months = getTranslation('months');
-            return months[monthIndex] || '';
-        }
-
-        function getWeekday(dayIndex) {
-            const weekdays = getTranslation('weekdays');
-            return weekdays[dayIndex] || '';
-        }
-
-        function loadLanguage() {
-            // 1. Check URL parameter
-            const urlLang = getQueryParam(LANGUAGE_PARAM);
-            if (VALID_LANGUAGES.has(urlLang)) {
-                saveLanguage(urlLang);
-                return urlLang;
-            }
-
-            // 2. Check local storage
-            const storageLang = localStorage.getItem(LANGUAGE_STORAGE);
-            if (VALID_LANGUAGES.has(storageLang)) {
-                return storageLang;
-            }
-
-            // 3. Default to English
-            return 'en';
-        }
-
-        function saveLanguage(lang) {
-            if (VALID_LANGUAGES.has(lang)) {
-                localStorage.setItem(LANGUAGE_STORAGE, lang);
-            }
-        }
-
-        function setLanguage(lang) {
-            if (VALID_LANGUAGES.has(lang) && lang !== currentLanguage) {
-                currentLanguage = lang;
-                saveLanguage(lang);
-                updatePageTranslations();
-                renderCurrentView();
-                syncUrlState();
-            }
-        }
-
-        function updatePageTranslations() {
-            // Update header
-            const header = document.querySelector('.header h1');
-            if (header) header.textContent = getTranslation('header');
-            const subtitle = document.querySelector('.header p');
-            if (subtitle) subtitle.textContent = getTranslation('subtitle');
-
-            // Update labels
-            const firstShiftDayLabel = document.querySelector('label[for="shift-start-date"]');
-            if (firstShiftDayLabel) firstShiftDayLabel.textContent = getTranslation('firstShiftDay');
-
-            const updateBtn = document.querySelector('button[onclick="updateShiftStartDate()"]');
-            if (updateBtn) updateBtn.textContent = getTranslation('update');
-
-            // Update View Mode label
-            const viewModeLabel = document.querySelector('.control-group label');
-            if (viewModeLabel && !viewModeLabel.htmlFor) {
-                viewModeLabel.textContent = getTranslation('viewMode');
-            }
-
-            // Update view buttons
-            const yearViewBtn = document.querySelector('button[data-view="year"]');
-            if (yearViewBtn) yearViewBtn.textContent = getTranslation('yearView');
-            const monthViewBtn = document.querySelector('button[data-view="month"]');
-            if (monthViewBtn) monthViewBtn.textContent = getTranslation('monthView');
-
-            // Update legend
-            const legendItems = document.querySelectorAll('.legend-item span');
-            if (legendItems[0]) legendItems[0].textContent = `${getTranslation('dayShift')} (${getTranslation('dayShiftHours')})`;
-            if (legendItems[1]) legendItems[1].textContent = `${getTranslation('nightShift')} (${getTranslation('nightShiftHours')})`;
-            if (legendItems[2]) legendItems[2].textContent = getTranslation('off');
-
-            // Update language selector
-            const languageSelect = document.getElementById('language-select');
-            if (languageSelect) languageSelect.value = currentLanguage;
-
-            // Update placeholders if needed
-            const jumpToYearInput = document.getElementById('year-input');
-            if (jumpToYearInput) jumpToYearInput.placeholder = getTranslation('jumpToYear');
-
-            // Update navigation buttons in year view
-            const previousYearBtn = document.querySelector('button[onclick="previousYear()"]');
-            if (previousYearBtn) previousYearBtn.textContent = getTranslation('previousYear');
-            const goBtn = document.querySelector('button[onclick="jumpToYear()"]');
-            if (goBtn) goBtn.textContent = getTranslation('go');
-            const nextYearBtn = document.querySelector('button[onclick="nextYear()"]');
-            if (nextYearBtn) nextYearBtn.textContent = getTranslation('nextYear');
-
-            // Update navigation buttons in month view
-            const previousMonthBtn = document.querySelector('button[onclick="previousMonth()"]');
-            if (previousMonthBtn) previousMonthBtn.textContent = getTranslation('previousMonth');
-            const nextMonthBtn = document.querySelector('button[onclick="nextMonth()"]');
-            if (nextMonthBtn) nextMonthBtn.textContent = getTranslation('nextMonth');
-
-            // Re-render month displays to update with new language
-            if (currentView === 'year') {
-                const yearDisplay = document.getElementById('year-display');
-                if (yearDisplay) yearDisplay.textContent = `${getTranslation('year')} ${currentYear}`;
-            } else {
-                const monthDisplay = document.getElementById('month-display');
-                if (monthDisplay) {
-                    const monthName = getMonth(currentMonth);
-                    monthDisplay.textContent = `${monthName} ${currentYear}`;
-                }
-            }
-        }
 
         // ==================== Shift Calculation ====================
         function getShiftType(date) {
@@ -929,7 +738,7 @@
             const yearViewEl = document.getElementById('year-view');
             const yearDisplayEl = document.getElementById('year-display');
 
-            yearDisplayEl.textContent = `${getTranslation('year')} ${currentYear}`;
+            yearDisplayEl.textContent = `Year ${currentYear}`;
 
             // Clear existing months (keep header)
             const months = yearViewEl.querySelectorAll('.month-calendar');
@@ -950,8 +759,11 @@
             const monthDisplayEl = document.getElementById('month-display');
             const gridEl = document.getElementById('single-month-grid');
 
-            const monthName = getMonth(currentMonth);
-            monthDisplayEl.textContent = `${monthName} ${currentYear}`;
+            const monthName = new Date(currentYear, currentMonth).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            });
+            monthDisplayEl.textContent = monthName;
 
             gridEl.innerHTML = '';
             generateMonthGrid(currentYear, currentMonth, gridEl, true);
@@ -964,7 +776,7 @@
             // Month header
             const monthHeader = document.createElement('div');
             monthHeader.className = 'month-header';
-            const monthName = `${getMonth(month).substring(0, 3)} ${year}`;
+            const monthName = new Date(year, month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
             monthHeader.textContent = monthName;
             monthCalendar.appendChild(monthHeader);
 
@@ -980,12 +792,13 @@
 
         function generateMonthGrid(year, month, gridElement, isSingleMonth = false) {
             // Weekday headers (starting from Monday)
-            for (let i = 0; i < 7; i++) {
+            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            weekDays.forEach(day => {
                 const header = document.createElement('div');
                 header.className = 'weekday-header';
-                header.textContent = getWeekday(i);
+                header.textContent = day;
                 gridElement.appendChild(header);
-            }
+            });
 
             // Get first day and number of days in month (convert to Monday=0 format)
             const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
@@ -1042,23 +855,17 @@
             if (isSingleMonth && !isOtherMonth) {
                 const shiftLabel = document.createElement('div');
                 shiftLabel.className = 'shift-label';
-                if (shiftType === SHIFT_TYPES.DAY) {
-                    shiftLabel.textContent = getTranslation('dayShift');
-                } else if (shiftType === SHIFT_TYPES.NIGHT) {
-                    shiftLabel.textContent = getTranslation('nightShift');
-                } else {
-                    shiftLabel.textContent = getTranslation('off');
-                }
+                shiftLabel.textContent = capitalizeFirstLetter(shiftType);
                 cell.appendChild(shiftLabel);
 
                 const shiftTime = document.createElement('div');
                 shiftTime.className = 'shift-time';
                 if (shiftType === SHIFT_TYPES.DAY) {
-                    shiftTime.textContent = getTranslation('dayShiftHours');
+                    shiftTime.textContent = '8:00 - 20:00';
                 } else if (shiftType === SHIFT_TYPES.NIGHT) {
-                    shiftTime.textContent = getTranslation('nightShiftHours');
+                    shiftTime.textContent = '20:00 - 8:00';
                 } else {
-                    shiftTime.textContent = getTranslation('noWork');
+                    shiftTime.textContent = 'No work';
                 }
                 cell.appendChild(shiftTime);
             }
@@ -1133,7 +940,6 @@
             }
 
             params.set(VIEW_PARAM, currentView);
-            params.set(LANGUAGE_PARAM, currentLanguage);
 
             const queryString = params.toString();
             const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`;
