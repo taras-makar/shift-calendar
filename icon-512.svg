@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Shift Calendar">
+  <rect width="512" height="512" rx="96" fill="#667eea"/>
+  <rect x="96" y="144" width="320" height="272" rx="32" fill="#ffffff"/>
+  <rect x="96" y="144" width="320" height="72" rx="32" fill="#764ba2"/>
+  <rect x="136" y="96" width="40" height="96" rx="20" fill="#ffffff"/>
+  <rect x="336" y="96" width="40" height="96" rx="20" fill="#ffffff"/>
+  <g fill="#e9ecef">
+    <rect x="136" y="248" width="64" height="48" rx="12"/>
+    <rect x="224" y="248" width="64" height="48" rx="12"/>
+    <rect x="312" y="248" width="64" height="48" rx="12"/>
+    <rect x="136" y="320" width="64" height="48" rx="12"/>
+    <rect x="224" y="320" width="64" height="48" rx="12"/>
+    <rect x="312" y="320" width="64" height="48" rx="12"/>
+  </g>
+  <rect x="136" y="248" width="64" height="48" rx="12" fill="#ffc107"/>
+  <rect x="224" y="320" width="64" height="48" rx="12" fill="#17a2b8"/>
+</svg>

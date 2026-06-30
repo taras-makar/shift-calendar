@@ -1,6 +1,18 @@
 const CACHE_NAME = 'shift-calendar-cache-v1';
 const CALENDAR_URL = './calendar.html';
 const VERSION_URL = './version.json';
+const MANIFEST_URL = './manifest.webmanifest';
+const ICON_180_URL = './icon-180.png';
+const ICON_192_URL = './icon-192.png';
+const ICON_512_URL = './icon-512.png';
+const STATIC_ASSET_FILENAMES = new Set([
+  'calendar.html',
+  'version.json',
+  'manifest.webmanifest',
+  'icon-180.png',
+  'icon-192.png',
+  'icon-512.png'
+]);
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -8,7 +20,11 @@ self.addEventListener('install', event => {
 
     await Promise.allSettled([
       cacheResource(cache, CALENDAR_URL),
-      cacheResource(cache, VERSION_URL)
+      cacheResource(cache, VERSION_URL),
+      cacheResource(cache, MANIFEST_URL),
+      cacheResource(cache, ICON_180_URL),
+      cacheResource(cache, ICON_192_URL),
+      cacheResource(cache, ICON_512_URL)
     ]);
 
     self.skipWaiting();
@@ -37,8 +53,30 @@ self.addEventListener('fetch', event => {
 
   if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(handleDocumentRequest());
+    return;
+  }
+
+  const requestUrl = new URL(request.url);
+  if (requestUrl.origin === self.location.origin && STATIC_ASSET_FILENAMES.has(requestUrl.pathname.split('/').pop())) {
+    event.respondWith(handleAssetRequest(request));
   }
 });
+
+async function handleAssetRequest(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  const networkResponse = await fetch(request);
+  if (networkResponse.ok) {
+    await cache.put(request, networkResponse.clone());
+  }
+
+  return networkResponse;
+}
 
 async function handleDocumentRequest() {
   const cache = await caches.open(CACHE_NAME);
