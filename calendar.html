@@ -507,7 +507,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>View Mode:</label>
+                    <label id="view-mode-label">View Mode:</label>
                     <div class="view-toggle">
                         <button class="view-btn active" onclick="switchView('year')" data-view="year">Year View</button>
                         <button class="view-btn" onclick="switchView('month')" data-view="month">Month View</button>
@@ -605,6 +605,7 @@
                 english: 'English',
                 ukrainian: 'Українська',
                 months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
             },
             uk: {
@@ -632,6 +633,7 @@
                 english: 'English',
                 ukrainian: 'Українська',
                 months: ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'],
+                monthsShort: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Ли', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
                 weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
             }
         };
@@ -658,7 +660,6 @@
             updatePageTranslations();
             renderCurrentView();
             syncUrlState();
-            scrollToCurrentDate();
         });
 
         // ==================== Language Management ====================
@@ -673,6 +674,11 @@
         function getMonth(monthIndex) {
             const months = getTranslation('months');
             return months[monthIndex] || '';
+        }
+
+        function getMonthShort(monthIndex) {
+            const monthsShort = getTranslation('monthsShort');
+            return monthsShort[monthIndex] || '';
         }
 
         function getWeekday(dayIndex) {
@@ -729,8 +735,8 @@
             if (updateBtn) updateBtn.textContent = getTranslation('update');
 
             // Update View Mode label
-            const viewModeLabel = document.querySelector('.control-group label');
-            if (viewModeLabel && !viewModeLabel.htmlFor) {
+            const viewModeLabel = document.getElementById('view-mode-label');
+            if (viewModeLabel) {
                 viewModeLabel.textContent = getTranslation('viewMode');
             }
 
@@ -964,7 +970,7 @@
             // Month header
             const monthHeader = document.createElement('div');
             monthHeader.className = 'month-header';
-            const monthName = `${getMonth(month).substring(0, 3)} ${year}`;
+            const monthName = `${getMonthShort(month)} ${year}`;
             monthHeader.textContent = monthName;
             monthCalendar.appendChild(monthHeader);
 
