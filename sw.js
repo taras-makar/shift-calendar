@@ -89,7 +89,11 @@ async function handleAssetRequest(request) {
 }
 
 function getAssetFilename(requestUrl) {
-  const pathname = requestUrl.pathname.replace(/\/$/, '');
+  if (requestUrl.pathname === '/') {
+    return '';
+  }
+
+  const pathname = requestUrl.pathname.replace(/\/+$/, '');
   return pathname.split('/').pop();
 }
 

@@ -981,14 +981,6 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(error => {
                     console.warn('Service worker registration failed:', error);
-                    try {
-                        localStorage.setItem('serviceWorkerRegistrationError', JSON.stringify({
-                            message: error.message,
-                            timestamp: new Date().toISOString()
-                        }));
-                    } catch (_) {
-                        // Ignore storage failures.
-                    }
                 });
             });
         }
