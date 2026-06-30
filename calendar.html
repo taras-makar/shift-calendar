@@ -503,7 +503,7 @@
                 <div class="control-group">
                     <label for="shift-start-date">First Shift Day:</label>
                     <input type="date" id="shift-start-date">
-                    <button onclick="updateShiftStartDate()">Update</button>
+                    <button id="update-btn" onclick="updateShiftStartDate()">Update</button>
                 </div>
 
                 <div class="control-group">
@@ -515,7 +515,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label for="language-select">Language:</label>
+                    <label id="language-label" for="language-select">Language:</label>
                     <select id="language-select" onchange="setLanguage(this.value)">
                         <option value="en">English</option>
                         <option value="uk">Українська</option>
@@ -523,15 +523,15 @@
                 </div>
 
                 <div class="legend">
-                    <div class="legend-item">
+                    <div class="legend-item" data-shift-type="day">
                         <div class="legend-color day"></div>
                         <span>Day Shift (8:00 - 20:00)</span>
                     </div>
-                    <div class="legend-item">
+                    <div class="legend-item" data-shift-type="night">
                         <div class="legend-color night"></div>
                         <span>Night Shift (20:00 - 08:00)</span>
                     </div>
-                    <div class="legend-item">
+                    <div class="legend-item" data-shift-type="off">
                         <div class="legend-color off"></div>
                         <span>Off</span>
                     </div>
@@ -545,10 +545,10 @@
                 <div class="calendar-header" style="grid-column: 1 / -1;">
                     <h2 id="year-display"></h2>
                     <div class="nav-controls">
-                        <button onclick="previousYear()">← Previous Year</button>
+                        <button id="prev-year-btn" onclick="previousYear()">← Previous Year</button>
                         <input type="number" id="year-input" min="2020" max="2100" placeholder="Jump to year">
-                        <button onclick="jumpToYear()">Go</button>
-                        <button onclick="nextYear()">Next Year →</button>
+                        <button id="go-year-btn" onclick="jumpToYear()">Go</button>
+                        <button id="next-year-btn" onclick="nextYear()">Next Year →</button>
                     </div>
                 </div>
             </div>
@@ -557,9 +557,9 @@
             <div id="month-view">
                 <div class="month-view-container">
                     <div class="month-view-header">
-                        <button onclick="previousMonth()">← Previous</button>
+                        <button id="prev-month-btn" onclick="previousMonth()">← Previous</button>
                         <h2 id="month-display"></h2>
-                        <button onclick="nextMonth()">Next →</button>
+                        <button id="next-month-btn" onclick="nextMonth()">Next →</button>
                     </div>
                     <div id="single-month-calendar" class="month-calendar single-month">
                         <div class="calendar-grid" id="single-month-grid"></div>
@@ -731,13 +731,19 @@
             const firstShiftDayLabel = document.querySelector('label[for="shift-start-date"]');
             if (firstShiftDayLabel) firstShiftDayLabel.textContent = getTranslation('firstShiftDay');
 
-            const updateBtn = document.querySelector('button[onclick="updateShiftStartDate()"]');
+            const updateBtn = document.getElementById('update-btn');
             if (updateBtn) updateBtn.textContent = getTranslation('update');
 
             // Update View Mode label
             const viewModeLabel = document.getElementById('view-mode-label');
             if (viewModeLabel) {
                 viewModeLabel.textContent = getTranslation('viewMode');
+            }
+
+            // Update Language label
+            const languageLabel = document.getElementById('language-label');
+            if (languageLabel) {
+                languageLabel.textContent = getTranslation('language');
             }
 
             // Update view buttons
@@ -747,10 +753,12 @@
             if (monthViewBtn) monthViewBtn.textContent = getTranslation('monthView');
 
             // Update legend
-            const legendItems = document.querySelectorAll('.legend-item span');
-            if (legendItems[0]) legendItems[0].textContent = `${getTranslation('dayShift')} (${getTranslation('dayShiftHours')})`;
-            if (legendItems[1]) legendItems[1].textContent = `${getTranslation('nightShift')} (${getTranslation('nightShiftHours')})`;
-            if (legendItems[2]) legendItems[2].textContent = getTranslation('off');
+            const legendDayItem = document.querySelector('.legend-item[data-shift-type="day"] span');
+            if (legendDayItem) legendDayItem.textContent = `${getTranslation('dayShift')} (${getTranslation('dayShiftHours')})`;
+            const legendNightItem = document.querySelector('.legend-item[data-shift-type="night"] span');
+            if (legendNightItem) legendNightItem.textContent = `${getTranslation('nightShift')} (${getTranslation('nightShiftHours')})`;
+            const legendOffItem = document.querySelector('.legend-item[data-shift-type="off"] span');
+            if (legendOffItem) legendOffItem.textContent = getTranslation('off');
 
             // Update language selector
             const languageSelect = document.getElementById('language-select');
@@ -761,17 +769,17 @@
             if (jumpToYearInput) jumpToYearInput.placeholder = getTranslation('jumpToYear');
 
             // Update navigation buttons in year view
-            const previousYearBtn = document.querySelector('button[onclick="previousYear()"]');
+            const previousYearBtn = document.getElementById('prev-year-btn');
             if (previousYearBtn) previousYearBtn.textContent = getTranslation('previousYear');
-            const goBtn = document.querySelector('button[onclick="jumpToYear()"]');
+            const goBtn = document.getElementById('go-year-btn');
             if (goBtn) goBtn.textContent = getTranslation('go');
-            const nextYearBtn = document.querySelector('button[onclick="nextYear()"]');
+            const nextYearBtn = document.getElementById('next-year-btn');
             if (nextYearBtn) nextYearBtn.textContent = getTranslation('nextYear');
 
             // Update navigation buttons in month view
-            const previousMonthBtn = document.querySelector('button[onclick="previousMonth()"]');
+            const previousMonthBtn = document.getElementById('prev-month-btn');
             if (previousMonthBtn) previousMonthBtn.textContent = getTranslation('previousMonth');
-            const nextMonthBtn = document.querySelector('button[onclick="nextMonth()"]');
+            const nextMonthBtn = document.getElementById('next-month-btn');
             if (nextMonthBtn) nextMonthBtn.textContent = getTranslation('nextMonth');
 
             // Re-render month displays to update with new language
