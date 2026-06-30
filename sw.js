@@ -57,7 +57,8 @@ self.addEventListener('fetch', event => {
   }
 
   const requestUrl = new URL(request.url);
-  if (requestUrl.origin === self.location.origin && STATIC_ASSET_FILENAMES.has(requestUrl.pathname.split('/').pop())) {
+  const assetFilename = getAssetFilename(requestUrl);
+  if (requestUrl.origin === self.location.origin && STATIC_ASSET_FILENAMES.has(assetFilename)) {
     event.respondWith(handleAssetRequest(request));
   }
 });
@@ -70,12 +71,26 @@ async function handleAssetRequest(request) {
     return cachedResponse;
   }
 
-  const networkResponse = await fetch(request);
-  if (networkResponse.ok) {
-    await cache.put(request, networkResponse.clone());
-  }
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      await cache.put(request, networkResponse.clone());
+    }
 
-  return networkResponse;
+    return networkResponse;
+  } catch (error) {
+    return new Response('Shift Calendar asset is unavailable offline.', {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8'
+      }
+    });
+  }
+}
+
+function getAssetFilename(requestUrl) {
+  const pathname = requestUrl.pathname.replace(/\/$/, '');
+  return pathname.split('/').pop();
 }
 
 async function handleDocumentRequest() {
