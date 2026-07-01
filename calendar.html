@@ -362,6 +362,22 @@
             color: #999;
         }
 
+        .share-toast {
+            color: #2eb85c;
+            font-weight: 600;
+            font-size: 0.9em;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .share-toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
         @media (max-width: 1200px) {
             #year-view.active {
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -466,6 +482,12 @@
             .calendar-section {
                 padding: 20px 10px;
             }
+
+            .share-toast {
+                text-align: center;
+                margin-top: 5px;
+                margin-left: 0;
+            }
         }
 
         @media (max-width: 480px) {
@@ -525,6 +547,11 @@
                         <option value="en" lang="en">English</option>
                         <option value="uk" lang="uk">Українська</option>
                     </select>
+                </div>
+
+                <div class="control-group">
+                    <button id="share-btn" onclick="shareUrl()">Share URL</button>
+                    <span id="share-toast" class="share-toast">Copied!</span>
                 </div>
 
                 <div class="legend">
@@ -609,6 +636,8 @@
                 language: 'Language:',
                 english: 'English',
                 ukrainian: 'Українська',
+                shareBtn: 'Share URL',
+                copiedMsg: 'Copied!',
                 months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                 monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -637,6 +666,8 @@
                 language: 'Мова:',
                 english: 'English',
                 ukrainian: 'Українська',
+                shareBtn: 'Поділитися посиланням',
+                copiedMsg: 'Скопійовано!',
                 months: ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'],
                 monthsShort: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
                 weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
@@ -768,6 +799,12 @@
             // Update language selector
             const languageSelect = document.getElementById('language-select');
             if (languageSelect) languageSelect.value = currentLanguage;
+
+            // Update share button and toast
+            const shareBtn = document.getElementById('share-btn');
+            if (shareBtn) shareBtn.textContent = getTranslation('shareBtn');
+            const shareToast = document.getElementById('share-toast');
+            if (shareToast) shareToast.textContent = getTranslation('copiedMsg');
 
             // Update placeholders if needed
             const jumpToYearInput = document.getElementById('year-input');
@@ -1188,6 +1225,69 @@
                     todayCell.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
                 }
             });
+        }
+
+        // ==================== Clipboard Management ====================
+        let shareTimeout = null;
+
+        function shareUrl() {
+            const url = window.location.href;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url)
+                    .then(() => showShareFeedback())
+                    .catch(err => {
+                        console.error('Failed to copy using navigator.clipboard: ', err);
+                        fallbackCopyText(url);
+                    });
+            } else {
+                fallbackCopyText(url);
+            }
+        }
+
+        // Fallback for browsers that do not support the modern Clipboard API
+        function fallbackCopyText(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.setAttribute('aria-hidden', 'true');
+            
+            // Position off-screen to avoid visual disturbance and accessibility issues
+            textArea.style.position = 'absolute';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '0';
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                // execCommand('copy') is deprecated but remains the only synchronous off-line fallback for older browsers
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showShareFeedback();
+                } else {
+                    console.error('Fallback copy command was unsuccessful');
+                }
+            } catch (err) {
+                console.error('Fallback copy failed: ', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showShareFeedback() {
+            const toast = document.getElementById('share-toast');
+            if (!toast) return;
+
+            toast.classList.add('show');
+            
+            if (shareTimeout) {
+                clearTimeout(shareTimeout);
+            }
+            
+            shareTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
         }
 
         if ('serviceWorker' in navigator) {
